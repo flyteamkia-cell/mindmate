@@ -4,9 +4,9 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project status
 
-MindMate is an AI-powered task manager built with Claude. The repository is currently in its initial state — only a README.md exists, with no source code, build tooling, or tests yet. There is no architecture to document until implementation begins.
+MindMate is an AI-powered task manager built with Claude. The repository currently contains only planning docs (`README.md`, `docs/ARCHITECTURE.md`, `docs/REQUIREMENTS.md`) — no source code, build tooling, or tests yet.
 
-When work starts on this project, update this file with actual build/lint/test commands and the real architecture once they exist.
+When work starts on this project, update this file with actual build/lint/test commands and replace the "Planned folder structure" below with the real one.
 
 ## Product
 
@@ -33,6 +33,17 @@ When work starts on this project, update this file with actual build/lint/test c
 - Database + Auth: Supabase (Postgres)
 - AI layer: pluggable adapter (provider chosen later)
 - Deployment: Vercel
+
+## Planned folder structure
+See `docs/ARCHITECTURE.md` for the full picture (data flow, diagram). Summary:
+```
+app/            routes, pages, API route handlers
+components/     reusable UI components (PascalCase)
+lib/            shared utilities, Supabase client, hooks
+lib/ai/         AI adapter interface + provider implementations
+types/          shared TypeScript types
+```
+The AI adapter in `lib/ai/` must stay decoupled from any one LLM provider — prioritization logic should not assume a specific provider's API.
 
 ## Conventions
 - Use TypeScript everywhere.
