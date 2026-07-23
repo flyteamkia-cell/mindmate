@@ -13,7 +13,8 @@ export default function Home() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(true);
   const [userId, setUserId] = useState<string | null>(null);
-
+  const [aiResult, setAiResult] = useState<any>(null);
+  const [aiLoading, setAiLoading] = useState(false);
   useEffect(() => {
     checkUser();
   }, []);
@@ -65,6 +66,22 @@ export default function Home() {
     router.push("/login");
   }
 
+  async function prioritize() {
+  setAiLoading(true);
+  setAiResult(null);
+  try {
+    const res = await fetch("/api/prioritize", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ tasks }),
+    });
+    setAiResult(await res.json());
+  } catch (e) {
+    setAiResult({ error: String(e) });
+  }
+  setAiLoading(false);
+  }
+  
   if (loading) {
     return (
       <main className="min-h-screen bg-slate-50 flex items-center justify-center">
@@ -72,6 +89,37 @@ export default function Home() {
       </main>
     );
   }
+  <div className="mb-6">
+  <button
+    onClick={prioritize}
+    disabled={aiLoading || tasks.length === 0}
+    className="w-full px-6 py-3 bg-amber-500 text-white rounded-full font-medium hover:bg-amber-600 transition disabled:opacity-40"
+  >
+    {aiLoading ? "Thinking..." : "🧠 What should I do first?"}
+  </button>
+
+  {aiResult && !aiResult.error && (
+    <div className="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-4">
+      <p className="font-medium text-amber-900 mb-2">{aiResult.summary}</p>
+      <ol className="text-sm text-amber-800 space-y-1">
+        {(aiResult.items ?? []).slice(0, 5).map((it: any) => {
+          const task = tasks.find((t) => t.id === it.id);
+          return (
+            <li key={it.id}>
+              <b>{it.rank}.</b> {task?.title ?? it.id}
+              <span className="text-amber-600"> — {it.reason}</span>
+            </li>
+          );
+        })}
+      </ol>
+      <p className="text-xs text-amber-500 mt-3">engine: {aiResult.engine}</p>
+    </div>
+  )}
+
+  {aiResult?.error && (
+    <p className="mt-3 text-sm text-red-500">{aiResult.error}</p>
+  )}
+  </div>
 
   return (
     <main className="min-h-screen bg-slate-50 py-12 px-6">
@@ -99,7 +147,37 @@ export default function Home() {
           />
           <Button variant="primary" onClick={addTask}>Add</Button>
         </div>
+        <div className="mb-6">
+          <button
+            onClick={prioritize}
+            disabled={aiLoading || tasks.length === 0}
+            className="w-full px-6 py-3 bg-amber-500 text-white rounded-full font-medium hover:bg-amber-600 transition disabled:opacity-40"
+          >
+            {aiLoading ? "Thinking..." : "🧠 What should I do first?"}
+          </button>
 
+          {aiResult && !aiResult.error && (
+            <div className="mt-4 bg-amber-50 border border-amber-200 rounded-lg p-4">
+              <p className="font-medium text-amber-900 mb-2">{aiResult.summary}</p>
+              <ol className="text-sm text-amber-800 space-y-1">
+                {(aiResult.items ?? []).slice(0, 5).map((it: any) => {
+                  const task = tasks.find((t) => t.id === it.id);
+                  return (
+                    <li key={it.id}>
+                      <b>{it.rank}.</b> {task?.title ?? it.id}
+                      <span className="text-amber-600"> — {it.reason}</span>
+                    </li>
+                  );
+                })}
+              </ol>
+              <p className="text-xs text-amber-500 mt-3">engine: {aiResult.engine}</p>
+            </div>
+          )}
+
+          {aiResult?.error && (
+            <p className="mt-3 text-sm text-red-500">{aiResult.error}</p>
+          )}
+        </div>
         <div className="space-y-2">
           {tasks.length === 0 && (
             <p className="text-center text-slate-400 py-8">
